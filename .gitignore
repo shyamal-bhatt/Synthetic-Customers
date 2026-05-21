@@ -1,0 +1,29 @@
+# OS-specific
+.DS_Store
+
+# Frontend
+synthetic-customer-frontend/node_modules/
+synthetic-customer-frontend/.next/
+synthetic-customer-frontend/.env*.local
+synthetic-customer-frontend/.snowflake/
+synthetic-customer-frontend/.v0-trash/
+synthetic-customer-frontend/.vercel/
+synthetic-customer-frontend/__v0_runtime_loader.js
+synthetic-customer-frontend/__v0_devtools.tsx
+synthetic-customer-frontend/__v0_jsx-dev-runtime.ts
+
+# Backend
+backend/.venv/
+backend/venv/
+backend/env/
+**/__pycache__/
+**/*.pyc
+backend/.env
+backend/.env.local
+backend/db.sqlite3
+backend/.pytest_cache/
+backend/.coverage
+backend/htmlcov/
+
+# Archives
+*.zip
