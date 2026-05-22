@@ -14,7 +14,7 @@ import {
   MessageCircle,
   Target,
 } from "lucide-react";
-import type { StudyConfig, MCQAnswers } from "@/app/page";
+import type { StudyConfig, MCQAnswers, StudyMCQSchema } from "@/app/page";
 import { TabIdea } from "@/components/tabs/tab-idea";
 import { TabJourney } from "@/components/tabs/tab-journey";
 import { TabCohort } from "@/components/tabs/tab-cohort";
@@ -23,11 +23,12 @@ import { TabFidelity } from "@/components/tabs/tab-fidelity";
 
 interface DashboardProps {
   config: StudyConfig;
+  mcqForm: StudyMCQSchema;
   mcqAnswers: MCQAnswers;
   onReset: () => void;
 }
 
-export function Dashboard({ config, mcqAnswers, onReset }: DashboardProps) {
+export function Dashboard({ config, mcqForm, mcqAnswers, onReset }: DashboardProps) {
   const [moneySaved, setMoneySaved] = useState(0);
   const [timeSaved, setTimeSaved] = useState(0);
   const [activeTab, setActiveTab] = useState("idea");
@@ -134,7 +135,7 @@ export function Dashboard({ config, mcqAnswers, onReset }: DashboardProps) {
         {/* Tab Content */}
         <div className="max-w-7xl mx-auto px-6 py-10">
           <TabsContent value="idea" className="mt-0">
-            <TabIdea config={config} mcqAnswers={mcqAnswers} />
+            <TabIdea config={config} mcqForm={mcqForm} mcqAnswers={mcqAnswers} />
           </TabsContent>
           <TabsContent value="journey" className="mt-0">
             <TabJourney />

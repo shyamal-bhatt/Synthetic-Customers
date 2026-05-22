@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Synthetic Customers API"
     ENVIRONMENT: str = "development"
+    GEMINI_API_KEY: str = ""
     
     # CORS setup: Union[List[str], str] prevents pydantic-settings from trying to JSON-decode a comma-separated string before the validator runs.
     BACKEND_CORS_ORIGINS: Union[List[str], str] = []

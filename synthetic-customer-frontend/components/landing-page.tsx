@@ -9,15 +9,16 @@ import type { StudyConfig } from "@/app/page";
 
 interface LandingPageProps {
   onInitialize: (config: StudyConfig) => void;
+  isInitializing?: boolean;
 }
 
-export function LandingPage({ onInitialize }: LandingPageProps) {
+export function LandingPage({ onInitialize, isInitializing = false }: LandingPageProps) {
   const [productIdea, setProductIdea] = useState("");
   const [targetAudience, setTargetAudience] = useState("");
   const [cohortSize, setCohortSize] = useState(20);
 
   const handleSubmit = () => {
-    if (productIdea.trim() && targetAudience.trim()) {
+    if (productIdea.trim() && targetAudience.trim() && !isInitializing) {
       onInitialize({ productIdea, targetAudience, cohortSize });
     }
   };
@@ -80,6 +81,7 @@ export function LandingPage({ onInitialize }: LandingPageProps) {
                   className="min-h-[140px] resize-none bg-background border-border text-foreground placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all"
                   value={productIdea}
                   onChange={(e) => setProductIdea(e.target.value)}
+                  disabled={isInitializing}
                 />
               </div>
 
@@ -94,6 +96,7 @@ export function LandingPage({ onInitialize }: LandingPageProps) {
                   className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all"
                   value={targetAudience}
                   onChange={(e) => setTargetAudience(e.target.value)}
+                  disabled={isInitializing}
                 />
               </div>
 
@@ -107,11 +110,12 @@ export function LandingPage({ onInitialize }: LandingPageProps) {
                     <button
                       key={size}
                       onClick={() => setCohortSize(size)}
+                      disabled={isInitializing}
                       className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
                         cohortSize === size
                           ? "bg-foreground text-background shadow-md"
                           : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-                      }`}
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
                       {size} personas
                     </button>
@@ -123,11 +127,20 @@ export function LandingPage({ onInitialize }: LandingPageProps) {
               <div className="pt-4">
                 <Button
                   onClick={handleSubmit}
-                  disabled={!productIdea.trim() || !targetAudience.trim()}
+                  disabled={!productIdea.trim() || !targetAudience.trim() || isInitializing}
                   className="w-full h-14 text-base font-medium rounded-xl bg-foreground text-background hover:bg-foreground/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
                 >
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Initialize Study Framework
+                  {isInitializing ? (
+                    <>
+                      <span className="w-5 h-5 mr-3 border-2 border-background border-t-transparent rounded-full animate-spin"></span>
+                      Initializing Framework...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5 mr-2" />
+                      Initialize Study Framework
+                    </>
+                  )}
                 </Button>
               </div>
             </div>

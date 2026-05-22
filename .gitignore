@@ -11,6 +11,7 @@ synthetic-customer-frontend/.vercel/
 synthetic-customer-frontend/__v0_runtime_loader.js
 synthetic-customer-frontend/__v0_devtools.tsx
 synthetic-customer-frontend/__v0_jsx-dev-runtime.ts
+*.tsbuildinfo
 
 # Backend
 backend/.venv/

@@ -1,64 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Circle, Sparkles } from "lucide-react";
-import type { StudyConfig, MCQAnswers } from "@/app/page";
+import type { StudyConfig, MCQAnswers, StudyMCQSchema } from "@/app/page";
 
 interface ContextRefinementProps {
   config: StudyConfig;
+  mcqForm: StudyMCQSchema;
   onGenerateCohort: (answers: MCQAnswers) => void;
 }
 
-const questions = [
-  {
-    id: "monetization",
-    question: "What is your primary monetization model?",
-    options: [
-      { value: "subscription", label: "Monthly Subscription" },
-      { value: "pay-per-use", label: "Pay-per-use" },
-      { value: "freemium", label: "Free-tier with enterprise upgrades" },
-      { value: "one-time", label: "One-time purchase" },
-    ],
-  },
-  {
-    id: "timeline",
-    question: "What is your expected launch timeline?",
-    options: [
-      { value: "1-month", label: "Within 1 month" },
-      { value: "3-months", label: "1-3 months" },
-      { value: "6-months", label: "3-6 months" },
-      { value: "exploring", label: "Still exploring" },
-    ],
-  },
-  {
-    id: "competition",
-    question: "How would you describe your competitive landscape?",
-    options: [
-      { value: "blue-ocean", label: "No direct competitors (Blue Ocean)" },
-      { value: "few-competitors", label: "Few established competitors" },
-      { value: "crowded", label: "Crowded market with differentiation" },
-      { value: "disrupting", label: "Disrupting existing solutions" },
-    ],
-  },
-];
-
 export function ContextRefinement({
   config,
+  mcqForm,
   onGenerateCohort,
 }: ContextRefinementProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<MCQAnswers>({
-    monetization: "",
-    timeline: "",
-    competition: "",
+  const [answers, setAnswers] = useState<MCQAnswers>(() => {
+    const initial: MCQAnswers = {};
+    mcqForm.questions.forEach((q) => {
+      initial[q.id] = "";
+    });
+    return initial;
   });
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  const questions = mcqForm.questions;
   const progress = ((currentStep + 1) / questions.length) * 100;
   const currentQuestion = questions[currentStep];
-  const currentAnswer = answers[currentQuestion.id as keyof MCQAnswers];
+  const currentAnswer = answers[currentQuestion.id];
 
   const handleSelectOption = (value: string) => {
     setAnswers((prev) => ({
@@ -92,10 +64,10 @@ export function ContextRefinement({
           {/* Progress Header */}
           <div className="mb-10">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground font-medium">
                 Refining Product Context
               </span>
-              <span className="text-sm font-medium text-foreground">
+              <span className="text-sm font-semibold text-foreground">
                 Step {currentStep + 1} of {questions.length}
               </span>
             </div>
@@ -110,7 +82,10 @@ export function ContextRefinement({
                 : "opacity-100 translate-x-0"
             }`}
           >
-            <h2 className="text-2xl font-semibold text-foreground mb-8 text-balance">
+            <span className="text-xs uppercase tracking-wider font-semibold text-foreground bg-foreground/5 px-2.5 py-1 rounded-full border border-border">
+              {currentQuestion.dimension.replace("_", " ")}
+            </span>
+            <h2 className="text-2xl font-semibold text-foreground mt-4 mb-8 text-balance leading-snug">
               {currentQuestion.question}
             </h2>
 
@@ -118,28 +93,28 @@ export function ContextRefinement({
             <div className="space-y-3">
               {currentQuestion.options.map((option) => (
                 <button
-                  key={option.value}
-                  onClick={() => handleSelectOption(option.value)}
+                  key={option.id}
+                  onClick={() => handleSelectOption(option.id)}
                   className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 text-left ${
-                    currentAnswer === option.value
-                      ? "border-foreground bg-foreground/5 text-foreground"
-                      : "border-border bg-background text-muted-foreground hover:border-muted-foreground/30 hover:bg-muted/50"
+                    currentAnswer === option.id
+                      ? "border-foreground bg-foreground/5 text-foreground shadow-sm"
+                      : "border-border bg-background text-muted-foreground hover:border-muted-foreground/30 hover:bg-muted/50 hover:text-foreground"
                   }`}
                 >
                   <div
                     className={`flex-shrink-0 transition-colors ${
-                      currentAnswer === option.value
+                      currentAnswer === option.id
                         ? "text-foreground"
                         : "text-muted-foreground/50"
                     }`}
                   >
-                    {currentAnswer === option.value ? (
+                    {currentAnswer === option.id ? (
                       <CheckCircle2 className="w-5 h-5" />
                     ) : (
                       <Circle className="w-5 h-5" />
                     )}
                   </div>
-                  <span className="font-medium">{option.label}</span>
+                  <span className="font-semibold text-sm">{option.label}</span>
                 </button>
               ))}
             </div>

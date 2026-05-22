@@ -2,46 +2,43 @@
 
 import { useEffect, useState } from "react";
 import { Clock, DollarSign, Users, Globe } from "lucide-react";
-import type { StudyConfig, MCQAnswers } from "@/app/page";
+import type { StudyConfig, MCQAnswers, StudyMCQSchema } from "@/app/page";
 
 interface TabIdeaProps {
   config: StudyConfig;
+  mcqForm: StudyMCQSchema;
   mcqAnswers: MCQAnswers;
 }
 
-const monetizationLabels: Record<string, string> = {
-  subscription: "Monthly Subscription",
-  "pay-per-use": "Pay-per-use",
-  freemium: "Freemium Model",
-  "one-time": "One-time Purchase",
-};
-
-const timelineLabels: Record<string, string> = {
-  "1-month": "< 1 Month",
-  "3-months": "1-3 Months",
-  "6-months": "3-6 Months",
-  exploring: "Exploring",
-};
-
-const competitionLabels: Record<string, string> = {
-  "blue-ocean": "Blue Ocean",
-  "few-competitors": "Few Competitors",
-  crowded: "Crowded Market",
-  disrupting: "Disrupting Existing",
-};
-
-export function TabIdea({ config, mcqAnswers }: TabIdeaProps) {
+export function TabIdea({ config, mcqForm, mcqAnswers }: TabIdeaProps) {
   const [displayedText, setDisplayedText] = useState("");
   const [isStreaming, setIsStreaming] = useState(true);
+
+  // Helper to dynamically resolve chosen option label for a given research dimension
+  const getSelectedLabel = (dimension: string) => {
+    const question = mcqForm.questions.find((q) => q.dimension === dimension);
+    if (!question) return "TBD";
+    const selectedOptionId = mcqAnswers[question.id];
+    const option = question.options.find((opt) => opt.id === selectedOptionId);
+    return option ? option.label : "TBD";
+  };
+
+  const pricingTolerance = getSelectedLabel("pricing_tolerance");
+  const problemUrgency = getSelectedLabel("problem_urgency");
+  const currentBehaviour = getSelectedLabel("current_behaviour");
+  const purchaseTrigger = getSelectedLabel("purchase_trigger");
+  const biggestHesitation = getSelectedLabel("biggest_hesitation");
 
   const fullText = `Based on your product concept, we've identified a compelling opportunity in the ${config.targetAudience.toLowerCase()} segment. 
 
 Your product addresses a genuine pain point: ${config.productIdea.slice(0, 100)}${config.productIdea.length > 100 ? "..." : ""}
 
-Key Market Mechanics:
-• Primary revenue model: ${monetizationLabels[mcqAnswers.monetization] || "TBD"}
-• Go-to-market timeline: ${timelineLabels[mcqAnswers.timeline] || "TBD"}
-• Competitive positioning: ${competitionLabels[mcqAnswers.competition] || "TBD"}
+Key Market Mechanics (from your context input):
+• Pricing Tolerance: ${pricingTolerance}
+• Problem Urgency: ${problemUrgency}
+• Current Behaviour: ${currentBehaviour}
+• Purchase Trigger: ${purchaseTrigger}
+• Biggest Hesitation: ${biggestHesitation}
 
 The synthetic cohort has been calibrated to match your target demographic profile, enabling high-fidelity behavioral simulation across purchase intent, feature prioritization, and objection patterns.`;
 
