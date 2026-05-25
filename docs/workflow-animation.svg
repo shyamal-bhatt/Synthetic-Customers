@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 280" width="100%" height="280">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#111827" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="activeBorderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="50%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+    <linearGradient id="flowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#a855f7" />
+    </linearGradient>
+
+    <!-- Filters for glows -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap');
+      
+      text {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      
+      .bg-rect {
+        fill: #090d16;
+        stroke: #1e293b;
+        stroke-width: 1.5;
+        rx: 16px;
+      }
+
+      /* Card animations */
+      .card {
+        fill: url(#cardGrad);
+        stroke: #1f2937;
+        stroke-width: 1.5;
+        rx: 12px;
+        transition: stroke 0.3s;
+      }
+      
+      .card-active {
+        stroke: url(#activeBorderGrad);
+        stroke-width: 2;
+      }
+
+      /* Pulse and flow animations */
+      @keyframes pulse-glow {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 0.8; }
+      }
+      .glow-effect {
+        animation: pulse-glow 3s infinite ease-in-out;
+      }
+
+      @keyframes dash-flow {
+        to {
+          stroke-dashoffset: -40;
+        }
+      }
+      .flow-line {
+        stroke: url(#flowGrad);
+        stroke-width: 2;
+        stroke-dasharray: 8 6;
+        animation: dash-flow 2s infinite linear;
+      }
+
+      @keyframes pop-avatar {
+        0% { transform: scale(0); opacity: 0; }
+        70% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      
+      .avatar-1 { animation: pop-avatar 0.6s 1s both cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: 400px 140px; }
+      .avatar-2 { animation: pop-avatar 0.6s 1.3s both cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: 375px 95px; }
+      .avatar-3 { animation: pop-avatar 0.6s 1.6s both cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: 425px 95px; }
+      .avatar-4 { animation: pop-avatar 0.6s 1.9s both cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: 375px 175px; }
+      .avatar-5 { animation: pop-avatar 0.6s 2.2s both cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: 425px 175px; }
+
+      @keyframes fill-dial {
+        from { stroke-dasharray: 0 100; }
+        to { stroke-dasharray: 87 100; }
+      }
+      .dial-path {
+        stroke-dasharray: 0 100;
+        animation: fill-dial 1.5s 2.5s both cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      @keyframes text-reveal {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .reveal-text {
+        animation: text-reveal 0.8s both;
+      }
+      .rev-1 { animation-delay: 0.2s; }
+      .rev-2 { animation-delay: 0.8s; }
+      .rev-3 { animation-delay: 2.3s; }
+    </style>
+  </defs>
+
+  <!-- Main Background -->
+  <rect class="bg-rect" x="2" y="2" width="796" height="276" />
+  
+  <!-- Subtle background grid dots -->
+  <g fill="#1e293b" opacity="0.4">
+    <circle cx="50" cy="40" r="1.5" /><circle cx="150" cy="40" r="1.5" /><circle cx="250" cy="40" r="1.5" /><circle cx="350" cy="40" r="1.5" /><circle cx="450" cy="40" r="1.5" /><circle cx="550" cy="40" r="1.5" /><circle cx="650" cy="40" r="1.5" /><circle cx="750" cy="40" r="1.5" />
+    <circle cx="50" cy="100" r="1.5" /><circle cx="150" cy="100" r="1.5" /><circle cx="250" cy="100" r="1.5" /><circle cx="350" cy="100" r="1.5" /><circle cx="450" cy="100" r="1.5" /><circle cx="550" cy="100" r="1.5" /><circle cx="650" cy="100" r="1.5" /><circle cx="750" cy="100" r="1.5" />
+    <circle cx="50" cy="160" r="1.5" /><circle cx="150" cy="160" r="1.5" /><circle cx="250" cy="160" r="1.5" /><circle cx="350" cy="160" r="1.5" /><circle cx="450" cy="160" r="1.5" /><circle cx="550" cy="160" r="1.5" /><circle cx="650" cy="160" r="1.5" /><circle cx="750" cy="160" r="1.5" />
+    <circle cx="50" cy="220" r="1.5" /><circle cx="150" cy="220" r="1.5" /><circle cx="250" cy="220" r="1.5" /><circle cx="350" cy="220" r="1.5" /><circle cx="450" cy="220" r="1.5" /><circle cx="550" cy="220" r="1.5" /><circle cx="650" cy="220" r="1.5" /><circle cx="750" cy="220" r="1.5" />
+  </g>
+
+  <!-- Flows -->
+  <!-- Flow 1 -->
+  <path class="flow-line" d="M 230 140 L 320 140" />
+  
+  <!-- Flow 2 -->
+  <path class="flow-line" d="M 480 140 L 570 140" />
+
+  <!-- ================= CARD 1: THE IDEA ================= -->
+  <g class="reveal-text rev-1">
+    <rect class="card card-active" x="30" y="40" width="200" height="200" />
+    <circle cx="130" cy="85" r="24" fill="#a855f7" fill-opacity="0.15" stroke="#a855f7" stroke-width="1.5" />
+    <path d="M 130 73 L 130 97 M 118 85 L 142 85" stroke="#c084fc" stroke-width="2" stroke-linecap="round" />
+    <text x="130" y="145" text-anchor="middle" font-size="16" font-weight="600" fill="#f3f4f6">1. Input Idea</text>
+    <text x="130" y="170" text-anchor="middle" font-size="12" fill="#9ca3af">Describe product idea</text>
+    <text x="130" y="190" text-anchor="middle" font-size="11" fill="#6b7280">Auto-define audience</text>
+  </g>
+
+  <!-- ================= CARD 2: THE COHORT ================= -->
+  <g class="reveal-text rev-2">
+    <rect class="card" x="320" y="40" width="160" height="200" />
+    <text x="400" y="65" text-anchor="middle" font-size="14" font-weight="600" fill="#f3f4f6">2. Synth Cohort</text>
+    
+    <!-- Synthetic Personas Avatars (ZooZoos) -->
+    <!-- Center Avatar -->
+    <g class="avatar-1">
+      <circle cx="400" cy="140" r="20" fill="#ec4899" fill-opacity="0.2" stroke="#ec4899" stroke-width="2" />
+      <circle cx="400" cy="135" r="6" fill="#f472b6" />
+      <path d="M 390 152 Q 400 145 410 152" fill="none" stroke="#f472b6" stroke-width="2" />
+    </g>
+    <!-- Top Left -->
+    <g class="avatar-2">
+      <circle cx="365" cy="95" r="16" fill="#3b82f6" fill-opacity="0.2" stroke="#3b82f6" stroke-width="2" />
+      <circle cx="365" cy="91" r="5" fill="#60a5fa" />
+      <path d="M 357 105 Q 365 99 373 105" fill="none" stroke="#60a5fa" stroke-width="2" />
+    </g>
+    <!-- Top Right -->
+    <g class="avatar-3">
+      <circle cx="435" cy="95" r="16" fill="#10b981" fill-opacity="0.2" stroke="#10b981" stroke-width="2" />
+      <circle cx="435" cy="91" r="5" fill="#34d399" />
+      <path d="M 427 105 Q 435 99 443 105" fill="none" stroke="#34d399" stroke-width="2" />
+    </g>
+    <!-- Bottom Left -->
+    <g class="avatar-4">
+      <circle cx="365" cy="185" r="16" fill="#f59e0b" fill-opacity="0.2" stroke="#f59e0b" stroke-width="2" />
+      <circle cx="365" cy="181" r="5" fill="#fbbf24" />
+      <path d="M 357 195 Q 365 189 373 195" fill="none" stroke="#fbbf24" stroke-width="2" />
+    </g>
+    <!-- Bottom Right -->
+    <g class="avatar-5">
+      <circle cx="435" cy="185" r="16" fill="#8b5cf6" fill-opacity="0.2" stroke="#8b5cf6" stroke-width="2" />
+      <circle cx="435" cy="181" r="5" fill="#a78bfa" />
+      <path d="M 427 195 Q 435 189 443 195" fill="none" stroke="#a78bfa" stroke-width="2" />
+    </g>
+    
+    <text x="400" y="222" text-anchor="middle" font-size="11" fill="#9ca3af">Parallel Simulation</text>
+  </g>
+
+  <!-- ================= CARD 3: SYNTHESIS ================= -->
+  <g class="reveal-text rev-3">
+    <rect class="card card-active" x="570" y="40" width="200" height="200" />
+    
+    <!-- Circular Fidelity Dial -->
+    <g transform="translate(670, 95)">
+      <!-- Background track -->
+      <circle r="32" fill="none" stroke="#1f2937" stroke-width="5" />
+      <!-- Indicator dial (87%) -->
+      <circle class="dial-path" r="32" fill="none" stroke="#06b6d4" stroke-width="5" stroke-linecap="round" transform="rotate(-90)" pathLength="100" />
+      <!-- Inner text -->
+      <text x="0" y="6" text-anchor="middle" font-size="16" font-weight="700" fill="#06b6d4">87%</text>
+    </g>
+
+    <text x="670" y="155" text-anchor="middle" font-size="16" font-weight="600" fill="#f3f4f6">3. SynthIQ Insights</text>
+    <text x="670" y="178" text-anchor="middle" font-size="11" fill="#34d399" font-weight="500">Confidence: High Fidelity</text>
+    <text x="670" y="196" text-anchor="middle" font-size="11" fill="#9ca3af">Actionable Objections</text>
+    <text x="670" y="214" text-anchor="middle" font-size="11" fill="#9ca3af">Market Feasibility Check</text>
+  </g>
+</svg>
