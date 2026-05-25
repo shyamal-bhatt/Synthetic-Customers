@@ -6,45 +6,43 @@ import { Check, Loader2 } from "lucide-react";
 const journeySteps = [
   {
     id: 1,
-    title: "Pasting Idea",
-    description: "Capturing your product concept and target audience",
-    duration: "Completed",
+    title: "Analyzing Context",
+    description: "Capturing product idea and target audience parameters",
   },
   {
     id: 2,
-    title: "Schema Parsing",
-    description: "Extracting features, value propositions, and market signals",
-    duration: "2.3 seconds",
+    title: "Cohort Architecture",
+    description: "Designing demographic and psychographic distributions",
   },
   {
     id: 3,
-    title: "Cohort Architecture",
-    description: "Designing demographic and psychographic distributions",
-    duration: "1.8 seconds",
-  },
-  {
-    id: 4,
-    title: "Persona Execution",
-    description: "Generating synthetic customer profiles with behavioral models",
-    duration: "4.2 seconds",
-  },
-  {
-    id: 5,
-    title: "Cluster Synthesis",
-    description: "Aggregating insights and identifying behavioral patterns",
-    duration: "1.5 seconds",
+    title: "Simulating Profiles",
+    description: "Generating synthetic customer profiles",
   },
 ];
 
-export function TabJourney() {
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const [activeStep, setActiveStep] = useState(1);
+interface TabJourneyProps {
+  activeStep?: number;
+  completedSteps?: number[];
+}
+
+export function TabJourney({ activeStep: externalActiveStep, completedSteps: externalCompletedSteps }: TabJourneyProps = {}) {
+  const [localCompletedSteps, setLocalCompletedSteps] = useState<number[]>([]);
+  const [localActiveStep, setLocalActiveStep] = useState(1);
+
+  const completedSteps = externalCompletedSteps ?? localCompletedSteps;
+  const activeStep = externalActiveStep ?? localActiveStep;
 
   useEffect(() => {
+    // Only run local simulation if no external controls are provided
+    if (externalActiveStep !== undefined || externalCompletedSteps !== undefined) {
+      return;
+    }
+
     const completeStep = (stepId: number) => {
-      setCompletedSteps((prev) => [...prev, stepId]);
+      setLocalCompletedSteps((prev) => [...prev, stepId]);
       if (stepId < journeySteps.length) {
-        setActiveStep(stepId + 1);
+        setLocalActiveStep(stepId + 1);
       }
     };
 
@@ -56,11 +54,11 @@ export function TabJourney() {
     });
 
     return () => timers.forEach(clearTimeout);
-  }, []);
+  }, [externalActiveStep, externalCompletedSteps]);
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="bg-card border border-border rounded-xl p-8 md:p-10">
+      <div className="bg-card border border-border rounded-xl p-8 md:p-10 shadow-2xl">
         <h3 className="text-xl font-semibold text-foreground mb-8">
           Study Generation Timeline
         </h3>
@@ -71,7 +69,7 @@ export function TabJourney() {
 
           {/* Steps */}
           <div className="space-y-6">
-            {journeySteps.map((step, index) => {
+            {journeySteps.map((step) => {
               const isCompleted = completedSteps.includes(step.id);
               const isActive = activeStep === step.id && !isCompleted;
 
@@ -111,9 +109,6 @@ export function TabJourney() {
                       <h4 className="font-medium text-foreground">
                         {step.title}
                       </h4>
-                      <span className="text-xs text-muted-foreground">
-                        {step.duration}
-                      </span>
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {step.description}

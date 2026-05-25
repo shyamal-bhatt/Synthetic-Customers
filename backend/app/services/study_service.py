@@ -4,7 +4,13 @@ import threading
 from typing import Dict, Any, Tuple
 
 from app.core.logging import get_logger
-from app.schemas.study import StudyInitializeRequest, StudyInitializeResponse, StudyMCQSchema
+from app.schemas.study import (
+    StudyInitializeRequest, 
+    StudyInitializeResponse, 
+    StudyMCQSchema,
+    TargetAudienceGenerateRequest,
+    TargetAudienceGenerateResponse
+)
 from app.prompts import get_study_mcq_prompt
 from app.services.llm_service import LLMService
 
@@ -13,7 +19,17 @@ logger = get_logger()
 # Thread-safe in-memory cache for idempotency
 # Cache key: (product_idea, target_audience, cohort_size)
 _cache_lock = threading.Lock()
-_cached_studies: Dict[Tuple[str, str, int], StudyInitializeResponse] = {}
+_cached_studies: Dict[Tuple[str, str, str, int], StudyInitializeResponse] = {}
+
+# Available Gemini models for fallback sequence
+GEMINI_MODELS = [
+    "gemini-2.5-flash",
+    "gemini-3.5-flash",
+    "gemini-3.1-flash-lite",
+    "gemini-2.5-flash-lite",
+    "gemini-3-flash",
+    "gemini-1.5-flash"
+]
 
 class StudyService:
     """
@@ -25,16 +41,39 @@ class StudyService:
     def __init__(self, llm_service: LLMService = None):
         self.llm_service = llm_service or LLMService()
 
+    def _call_gemini_with_fallback(self, prompt: str, system_instruction: str = None) -> str:
+        """
+        Invokes Gemini with sequential fallbacks if rate limits occur.
+        """
+        last_error = None
+        for idx, model in enumerate(GEMINI_MODELS):
+            try:
+                logger.info(f"[STUDY SERVICE] Trying Gemini model: {model} (Attempt {idx+1}/{len(GEMINI_MODELS)})...")
+                response = self.llm_service.call_gemini(
+                    prompt=prompt,
+                    system_instruction=system_instruction,
+                    model_name=model
+                )
+                logger.info(f"[STUDY SERVICE] Success using Gemini model: {model}")
+                return response
+            except Exception as e:
+                logger.warning(f"[STUDY SERVICE] Model {model} failed: {str(e)}")
+                last_error = e
+        
+        logger.error("[STUDY SERVICE] All Gemini fallback models exhausted.")
+        raise last_error or RuntimeError("All Gemini API models failed.")
+
     def initialize_study(self, payload: StudyInitializeRequest) -> StudyInitializeResponse:
         logger.info("--------------------------------------------------")
         logger.info("[STUDY SERVICE] Starting study initialization workflow...")
         logger.info("--------------------------------------------------")
         
         # Normalization for cache check
+        norm_project = payload.project_name.strip()
         norm_idea = payload.product_idea.strip()
         norm_audience = payload.target_audience.strip()
         norm_size = payload.cohort_size
-        cache_key = (norm_idea, norm_audience, norm_size)
+        cache_key = (norm_project, norm_idea, norm_audience, norm_size)
         
         # Idempotence Check
         with _cache_lock:
@@ -61,7 +100,7 @@ class StudyService:
                 prompt = get_study_mcq_prompt(norm_idea, norm_audience)
                 
                 # 2. Call the LLM Service
-                raw_text = self.llm_service.call_gemini(prompt)
+                raw_text = self._call_gemini_with_fallback(prompt)
                 
                 # 3. Try parsing raw JSON response
                 parsed_json = json.loads(raw_text)
@@ -108,3 +147,30 @@ class StudyService:
         logger.info("--------------------------------------------------")
         
         return response
+
+    def generate_target_audience(self, payload: TargetAudienceGenerateRequest) -> TargetAudienceGenerateResponse:
+        logger.info("--------------------------------------------------")
+        logger.info("[STUDY SERVICE] Generating target audience description...")
+        logger.info("--------------------------------------------------")
+        
+        try:
+            from app.prompts.target_audience import get_target_audience_prompt
+            prompt, system_instruction = get_target_audience_prompt(payload.project_name, payload.product_idea)
+            
+            raw_text = self._call_gemini_with_fallback(prompt, system_instruction=system_instruction)
+            
+            try:
+                parsed_json = json.loads(raw_text)
+                target_audience = parsed_json.get("target_audience", raw_text)
+            except json.JSONDecodeError:
+                # Fallback if the model just returns the string
+                target_audience = raw_text.strip(' \n"')
+                
+            return TargetAudienceGenerateResponse(
+                status="success",
+                targetAudience=target_audience
+            )
+        except Exception as e:
+            logger.error(f"[STUDY SERVICE] Error generating target audience: {str(e)}")
+            raise
+

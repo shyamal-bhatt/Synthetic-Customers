@@ -25,6 +25,16 @@ backend/db.sqlite3
 backend/.pytest_cache/
 backend/.coverage
 backend/htmlcov/
+backend/test*.py
+backend/patch*.py
+backend/curl*
+backend/run_*.py
+backend/run_*.sh
+backend/study_old.py
+backend/fix_latest_fidelity.py
+backend/add_col.py
+backend/ast_search*.py
+backend/trace_valueerror.py
 
 # Archives
 *.zip

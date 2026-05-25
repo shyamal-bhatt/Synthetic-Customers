@@ -7,6 +7,11 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Synthetic Customers API"
     ENVIRONMENT: str = "development"
     GEMINI_API_KEY: str = ""
+    GROQ_API_KEY: str = ""
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    LOCAL_MODEL_NAME: str = "llama3.1"
+    SUPABASE_URL: str = ""
+    SUPABASE_SERVICE_KEY: str = ""
     
     # CORS setup: Union[List[str], str] prevents pydantic-settings from trying to JSON-decode a comma-separated string before the validator runs.
     BACKEND_CORS_ORIGINS: Union[List[str], str] = []

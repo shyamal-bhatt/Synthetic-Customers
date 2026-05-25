@@ -1,304 +1,268 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { X, ThumbsUp, ThumbsDown, AlertTriangle } from "lucide-react";
-
-interface Persona {
-  id: number;
-  name: string;
-  age: number;
-  occupation: string;
-  income: string;
-  techSavviness: number;
-  ocean: {
-    openness: number;
-    conscientiousness: number;
-    extraversion: number;
-    agreeableness: number;
-    neuroticism: number;
-  };
-  interview: string;
-  mustHave: string[];
-  useless: string[];
-  objections: string[];
-}
-
-const firstNames = [
-  "Sarah", "Michael", "Emma", "James", "Olivia", "William", "Ava", "Benjamin",
-  "Sophia", "Lucas", "Mia", "Henry", "Charlotte", "Alexander", "Amelia", "Daniel",
-  "Harper", "Matthew", "Evelyn", "David", "Abigail", "Joseph", "Emily", "Samuel",
-  "Elizabeth", "Sebastian", "Sofia", "Jack", "Avery", "Aiden", "Ella", "Owen",
-];
-
-const lastNames = [
-  "Chen", "Martinez", "Patel", "Johnson", "Williams", "Brown", "Kim", "Singh",
-  "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "White", "Harris", "Martin",
-  "Thompson", "Garcia", "Robinson", "Clark", "Lewis", "Lee", "Walker", "Hall",
-];
-
-const occupations = [
-  "Product Manager", "Software Engineer", "Marketing Director", "Entrepreneur",
-  "UX Designer", "Data Analyst", "Consultant", "Healthcare Professional",
-  "Financial Analyst", "Teacher", "Creative Director", "Operations Manager",
-  "Sales Executive", "Research Scientist", "Freelancer", "Business Owner",
-];
-
-const incomes = [
-  "$40K-60K", "$60K-80K", "$80K-100K", "$100K-150K", "$150K-200K", "$200K+",
-];
-
-const interviews = [
-  "I'm always looking for tools that save me time. If this can genuinely reduce my weekly planning by even 30 minutes, I'd pay for it without thinking twice.",
-  "Honestly, I'm skeptical of AI products. I've been burned before by overpromising tech. Show me it works with real examples and I'll consider it.",
-  "Price is secondary to me if the value is there. What matters most is whether it integrates well with my existing workflow.",
-  "I'd need to try it for at least a month before committing. A good free trial is essential for products like this.",
-  "My main concern is data privacy. If you can guarantee my information is secure and not used for training, I'm in.",
-  "I love trying new productivity tools. I'm probably not your typical user though - I'll want advanced features quickly.",
-];
-
-const mustHaves = [
-  "Easy onboarding", "Mobile app", "Dark mode", "Offline access", "API access",
-  "Team collaboration", "Data export", "Custom reports", "Integrations",
-  "Real-time sync", "Email notifications", "Calendar integration",
-];
-
-const uselessFeatures = [
-  "Gamification", "Social sharing", "Achievement badges", "Leaderboards",
-  "Animated tutorials", "AI chatbot support", "Community forums", "Newsletter",
-];
-
-const objectionsList = [
-  "The pricing seems high for individual users",
-  "I'm not sure I trust AI with this kind of decision",
-  "How is this different from existing solutions?",
-  "I'd need team features before this is useful",
-  "The learning curve looks steep",
-  "I'm concerned about vendor lock-in",
-  "What happens to my data if you shut down?",
-  "I need to see more social proof first",
-];
-
-function generatePersona(id: number): Persona {
-  const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-  const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-  
-  return {
-    id,
-    name: `${firstName} ${lastName}`,
-    age: Math.floor(Math.random() * 30) + 25,
-    occupation: occupations[Math.floor(Math.random() * occupations.length)],
-    income: incomes[Math.floor(Math.random() * incomes.length)],
-    techSavviness: Math.floor(Math.random() * 10) + 1,
-    ocean: {
-      openness: Math.floor(Math.random() * 10) + 1,
-      conscientiousness: Math.floor(Math.random() * 10) + 1,
-      extraversion: Math.floor(Math.random() * 10) + 1,
-      agreeableness: Math.floor(Math.random() * 10) + 1,
-      neuroticism: Math.floor(Math.random() * 10) + 1,
-    },
-    interview: interviews[Math.floor(Math.random() * interviews.length)],
-    mustHave: mustHaves.sort(() => Math.random() - 0.5).slice(0, 3),
-    useless: uselessFeatures.sort(() => Math.random() - 0.5).slice(0, 2),
-    objections: objectionsList.sort(() => Math.random() - 0.5).slice(0, 2),
-  };
-}
+import { 
+  X, 
+  ThumbsUp, 
+  ThumbsDown, 
+  AlertTriangle, 
+  Sparkles,
+  TrendingUp,
+  Brain,
+  Shield,
+  Briefcase,
+  PiggyBank,
+  CheckCircle,
+  HelpCircle
+} from "lucide-react";
+import type { Persona, PersonaFeedback } from "@/components/dashboard";
+import { PersonaZooZoo } from "@/components/ui/persona-zoozoo";
 
 interface TabCohortProps {
-  cohortSize: number;
+  personas: Persona[];
+  feedback: PersonaFeedback[];
+  isSimulatingFeedback: boolean;
+  onGetFeedback: () => void;
+  onGetSynthesis: () => void;
+  showSynthesisTab: boolean;
+  onSelectPersona: (persona: Persona) => void;
 }
 
-export function TabCohort({ cohortSize }: TabCohortProps) {
-  const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
+export function TabCohort({
+  personas,
+  feedback,
+  isSimulatingFeedback,
+  onGetFeedback,
+  onGetSynthesis,
+  showSynthesisTab,
+  onSelectPersona,
+}: TabCohortProps) {
   const [visibleCount, setVisibleCount] = useState(0);
+  const [alertedId, setAlertedId] = useState<string | null>(null);
 
-  const personas = useMemo(() => {
-    return Array.from({ length: cohortSize }, (_, i) => generatePersona(i + 1));
-  }, [cohortSize]);
+  const handleCardClick = (persona: Persona) => {
+    setAlertedId(persona.id);
+    setTimeout(() => {
+      onSelectPersona(persona);
+    }, 300); // 300ms delay to show the alert reaction
+    
+    setTimeout(() => {
+      setAlertedId(null);
+    }, 1500);
+  };
 
+  const getZooZooActivity = (index: number): 'pacer' | 'kicker' | 'bouncer' | 'greeter' => {
+    const activities: ('pacer' | 'kicker' | 'bouncer' | 'greeter')[] = ['pacer', 'kicker', 'bouncer', 'greeter'];
+    return activities[index % activities.length];
+  };
+
+  const getZooZooPoseClass = (activity: string) => {
+    switch(activity) {
+      case 'pacer':
+        return "absolute -top-[44px] left-0 right-0 flex justify-center z-20 scale-90";
+      case 'kicker':
+        return "absolute -top-7 -right-3 z-20 scale-90";
+      case 'bouncer':
+        return "absolute -bottom-2 -right-4 z-20 scale-90 animate-bounce";
+      case 'greeter':
+        return "absolute top-1/2 -left-8 -translate-y-1/2 z-20 scale-90";
+      default:
+        return "";
+    }
+  };
+
+  // Staggered load animation when personas change
   useEffect(() => {
+    setVisibleCount(0);
+    if (personas.length === 0) return;
+
     const interval = setInterval(() => {
       setVisibleCount((prev) => {
-        if (prev >= cohortSize) {
+        if (prev >= personas.length) {
           clearInterval(interval);
           return prev;
         }
         return prev + 1;
       });
-    }, 50);
+    }, 20);
 
     return () => clearInterval(interval);
-  }, [cohortSize]);
+  }, [personas]);
+
+
 
   const OceanBar = ({ value, label }: { value: number; label: string }) => (
     <div className="flex items-center gap-3">
       <span className="text-xs text-muted-foreground w-28">{label}</span>
-      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
         <div
-          className="h-full bg-foreground rounded-full transition-all duration-500"
+          className="h-full bg-gradient-to-r from-foreground/80 to-foreground rounded-full transition-all duration-500"
           style={{ width: `${value * 10}%` }}
         />
       </div>
-      <span className="text-xs font-medium text-foreground w-4">{value}</span>
+      <span className="text-xs font-semibold text-foreground w-4 text-right">{value}</span>
     </div>
   );
 
   return (
     <div className="relative">
-      {/* Persona Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {personas.slice(0, visibleCount).map((persona, index) => (
-          <button
-            key={persona.id}
-            onClick={() => setSelectedPersona(persona)}
-            className="bg-card border border-border rounded-xl p-5 text-left hover:border-foreground/30 hover:shadow-sm transition-all duration-200 animate-in fade-in slide-in-from-bottom-2"
-            style={{ animationDelay: `${index * 20}ms` }}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-foreground font-semibold text-sm">
-                {persona.name.split(" ").map((n) => n[0]).join("")}
-              </div>
-              <div>
-                <p className="font-medium text-foreground text-sm">
-                  {persona.name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {persona.age} years old
-                </p>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground mb-1">
-              {persona.occupation}
-            </p>
-            <p className="text-xs text-muted-foreground mb-4">{persona.income}</p>
-            
-            {/* Mini OCEAN preview */}
-            <div className="space-y-1">
-              {Object.entries(persona.ocean).slice(0, 3).map(([key, value]) => (
-                <div key={key} className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-foreground/60" />
-                  <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-foreground/60 rounded-full"
-                      style={{ width: `${value * 10}%` }}
-                    />
+      {personas.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+          <Sparkles className="w-8 h-8 animate-pulse mb-3" />
+          <p className="text-sm">Synthesizing customer cohort profiles...</p>
+        </div>
+      ) : (
+        /* Persona Grid */
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-10 sm:gap-12 pt-16 pb-8">
+          {personas.slice(0, visibleCount).map((persona, index) => {
+            if (!persona) return null;
+            const matchFeedback = feedback.find((f) => f.personaId === persona.id);
+            return (
+              <div 
+                key={persona.id || index}
+                id={`persona-card-${persona.id}`}
+                className="relative animate-in fade-in slide-in-from-bottom-2 isolate"
+                style={{ animationDelay: `${index * 15}ms` }}
+              >
+                {/* Scattered ZooZoo */}
+                <div className={`pointer-events-auto ${getZooZooPoseClass(getZooZooActivity(index))} transition-all duration-300 ${alertedId === persona.id ? 'scale-110 z-30' : ''}`}>
+                  <PersonaZooZoo 
+                    incomeBracket={persona.incomeBracket} 
+                    isAlerted={alertedId === persona.id}
+                    activity={getZooZooActivity(index)}
+                    onClick={() => handleCardClick(persona)}
+                  />
+                </div>
+
+                <button
+                  onClick={() => handleCardClick(persona)}
+                  className="w-full bg-card border border-border/80 rounded-xl p-5 text-left hover:border-foreground/30 hover:shadow-md transition-all duration-300 relative group overflow-hidden z-10"
+                >
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-foreground/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  {/* Card Header */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 shrink-0 rounded-full bg-muted/30 border border-border/50 flex items-center justify-center overflow-hidden relative">
+                      <PersonaZooZoo 
+                        incomeBracket={persona.incomeBracket} 
+                        activity="idle"
+                        variant="headshot"
+                        className="w-full h-full" 
+                      />
+                    </div>
+                    <div className="min-w-0">
+                    <p className="font-semibold text-foreground text-sm truncate group-hover:text-foreground/95">
+                      {persona.name || "Generating..."}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {persona.age || "--"} yrs old • {persona.location || "Unknown"}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Detail Panel */}
-      {selectedPersona && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl animate-in zoom-in-95">
-            {/* Header */}
-            <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center text-foreground font-semibold text-lg">
-                  {selectedPersona.name.split(" ").map((n) => n[0]).join("")}
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-foreground">
-                    {selectedPersona.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedPersona.age} • {selectedPersona.occupation} • {selectedPersona.income}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedPersona(null)}
-                className="p-2 rounded-lg hover:bg-muted transition-colors"
-              >
-                <X className="w-5 h-5 text-muted-foreground" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6 space-y-8">
-              {/* OCEAN Profile */}
-              <div>
-                <h4 className="text-sm font-medium text-foreground mb-4">
-                  OCEAN Psychological Profile
-                </h4>
-                <div className="space-y-3 bg-muted/50 rounded-xl p-4">
-                  <OceanBar value={selectedPersona.ocean.openness} label="Openness" />
-                  <OceanBar value={selectedPersona.ocean.conscientiousness} label="Conscientiousness" />
-                  <OceanBar value={selectedPersona.ocean.extraversion} label="Extraversion" />
-                  <OceanBar value={selectedPersona.ocean.agreeableness} label="Agreeableness" />
-                  <OceanBar value={selectedPersona.ocean.neuroticism} label="Neuroticism" />
-                </div>
-              </div>
-
-              {/* Interview Response */}
-              <div>
-                <h4 className="text-sm font-medium text-foreground mb-3">
-                  Open Interview Response
-                </h4>
-                <p className="text-muted-foreground text-sm leading-relaxed bg-muted/50 rounded-xl p-4">
-                  &ldquo;{selectedPersona.interview}&rdquo;
+                
+                <p className="text-xs text-muted-foreground font-medium mb-1 truncate">
+                  {persona.occupation}
                 </p>
-              </div>
-
-              {/* Feature Rankings */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
-                    <ThumbsUp className="w-4 h-4 text-emerald-600" />
-                    Must-Have Features
-                  </h4>
-                  <ul className="space-y-2">
-                    {selectedPersona.mustHave.map((feature) => (
-                      <li
-                        key={feature}
-                        className="text-sm text-muted-foreground bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-lg"
-                      >
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground font-bold uppercase tracking-wider">
+                    {persona.incomeBracket}
+                  </span>
+                  {matchFeedback && (
+                    <span className="text-[10px] font-bold text-amber-500 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">
+                      ★ {matchFeedback.likelihoodToBuy}/5
+                    </span>
+                  )}
                 </div>
-                <div>
-                  <h4 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
-                    <ThumbsDown className="w-4 h-4 text-rose-600" />
-                    Useless Features
-                  </h4>
-                  <ul className="space-y-2">
-                    {selectedPersona.useless.map((feature) => (
-                      <li
-                        key={feature}
-                        className="text-sm text-muted-foreground bg-rose-50 border border-rose-200 px-3 py-2 rounded-lg"
-                      >
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                
+                {/* Mini OCEAN Preview - Only show if feedbacks loaded */}
+                {feedback.length > 0 && (
+                  <div className="space-y-1 pt-3 border-t border-border/40">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[8px] font-bold text-muted-foreground w-8 uppercase">OPEN</span>
+                      <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-foreground/60 rounded-full"
+                          style={{ width: `${persona.oceanProfile.openness * 10}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[8px] font-bold text-muted-foreground w-8 uppercase">CONS</span>
+                      <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-foreground/60 rounded-full"
+                          style={{ width: `${persona.oceanProfile.conscientiousness * 10}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[8px] font-bold text-muted-foreground w-8 uppercase">NEUR</span>
+                      <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-foreground/60 rounded-full"
+                          style={{ width: `${persona.oceanProfile.neuroticism * 10}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                </button>
               </div>
-
-              {/* Objections */}
-              <div>
-                <h4 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-600" />
-                  Top Objections
-                </h4>
-                <ul className="space-y-2">
-                  {selectedPersona.objections.map((objection, i) => (
-                    <li
-                      key={i}
-                      className="text-sm text-muted-foreground bg-amber-50 border border-amber-200 px-3 py-2 rounded-lg"
-                    >
-                      {objection}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
       )}
+
+      {/* Progressive CTA Banners under persona grid */}
+      {personas.length > 0 && (
+        <div className="mt-12 flex justify-center w-full">
+          {feedback.length === 0 ? (
+            <div className="w-full max-w-xl bg-card border border-border/80 rounded-2xl p-8 text-center shadow-lg relative overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-500">
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-violet-500 via-indigo-500 to-cyan-500" />
+              <Sparkles className="w-7 h-7 mx-auto text-violet-500 mb-3 animate-pulse" />
+              <h3 className="text-base font-bold text-foreground mb-1.5">Deploy Customer Feedback Loop</h3>
+              <p className="text-xs text-muted-foreground mb-6 leading-relaxed max-w-md mx-auto">
+                Simulate in-depth user interviews for all {personas.length} personas in parallel. Unlock detailed purchase intent, MUST-HAVE integrations, absolute dealbreakers, and deep psychological feedback.
+              </p>
+              <button
+                onClick={onGetFeedback}
+                disabled={isSimulatingFeedback}
+                className="w-full sm:w-auto min-w-[220px] h-11 px-6 rounded-xl bg-foreground text-background hover:bg-foreground/90 font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-sm flex items-center justify-center gap-2 mx-auto"
+              >
+                {isSimulatingFeedback ? (
+                  <>
+                    <span className="w-4.5 h-4.5 border-2 border-background/20 border-t-background rounded-full animate-spin shrink-0" />
+                    Simulating Interviews...
+                  </>
+                ) : (
+                  <>
+                    <Brain className="w-4 h-4 shrink-0" />
+                    Get Individual Feedback
+                  </>
+                )}
+              </button>
+            </div>
+          ) : (
+            !showSynthesisTab && (
+              <div className="w-full max-w-xl bg-card border border-border/80 rounded-2xl p-8 text-center shadow-lg relative overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-500">
+                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-500" />
+                <Sparkles className="w-7 h-7 mx-auto text-emerald-500 mb-3 animate-bounce" />
+                <h3 className="text-base font-bold text-foreground mb-1.5">Perform Overall Cohort Synthesis</h3>
+                <p className="text-xs text-muted-foreground mb-6 leading-relaxed max-w-md mx-auto">
+                  Consolidate qualitative insights from all simulated feedback loops. Cluster core objections, identify positive signals, and construct the final synthesis dashboard.
+                </p>
+                <button
+                  onClick={onGetSynthesis}
+                  className="w-full sm:w-auto min-w-[220px] h-11 px-6 rounded-xl bg-foreground text-background hover:bg-foreground/90 font-bold text-sm transition-all duration-200 shadow-sm flex items-center justify-center gap-2 mx-auto"
+                >
+                  <TrendingUp className="w-4 h-4 shrink-0" />
+                  Perform Overall Analysis
+                </button>
+              </div>
+            )
+          )}
+        </div>
+      )}
+
     </div>
   );
 }

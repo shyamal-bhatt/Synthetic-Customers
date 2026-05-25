@@ -1,5 +1,5 @@
 import re
-from typing import List, Any
+from typing import List, Any, Dict
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 class StudyInitializeRequest(BaseModel):
@@ -7,6 +7,11 @@ class StudyInitializeRequest(BaseModel):
     Schema representing the incoming configuration parameters for initializing a study framework.
     Uses camelCase field aliases to match frontend payloads while allowing standard snake_case python access.
     """
+    project_name: str = Field(
+        ...,
+        alias="projectName",
+        description="The project name to identify the study in the UI"
+    )
     product_idea: str = Field(
         ..., 
         alias="productIdea",
@@ -24,6 +29,16 @@ class StudyInitializeRequest(BaseModel):
         le=200, 
         description="The requested size of the synthetic cohort persona group (between 5 and 200)"
     )
+
+    @field_validator("project_name", mode="before")
+    @classmethod
+    def clean_project_name(cls, v: Any) -> str:
+        if not isinstance(v, str):
+            raise ValueError("Project name must be a string")
+        cleaned = v.strip()
+        if not cleaned:
+            raise ValueError("Project name cannot be empty")
+        return cleaned
 
     @field_validator("product_idea", "target_audience", mode="before")
     @classmethod
@@ -80,6 +95,7 @@ class StudyInitializeRequest(BaseModel):
         populate_by_name=True,
         json_schema_extra={
             "example": {
+                "projectName": "Smart Grocery App",
                 "productIdea": "An AI app that builds a weekly grocery list from a photo of your fridge",
                 "targetAudience": "Busy professionals aged 25-45 who want to eat healthier",
                 "cohortSize": 20
@@ -93,7 +109,7 @@ class MCQOption(BaseModel):
     Representing a single option in a dynamic clarifying question.
     """
     id: str = Field(..., description="Unique option identifier (must be a, b, c, or d)")
-    label: str = Field(..., min_length=1, description="Option text")
+    label: str = Field(..., description="Option text")
 
 
 class MCQQuestion(BaseModel):
@@ -103,52 +119,25 @@ class MCQQuestion(BaseModel):
     id: str = Field(..., description="Unique question identifier (q1, q2, q3, q4, q5)")
     dimension: str = Field(..., description="The dimension of user research (e.g. pricing_tolerance)")
     question: str = Field(..., min_length=5, description="The generated question text")
-    options: List[MCQOption] = Field(..., description="The 4 options available for the question")
+    options: List[MCQOption] = Field(..., description="The options available for the question")
 
     @field_validator("options")
     @classmethod
     def validate_options_structure(cls, v: List[MCQOption]) -> List[MCQOption]:
         """
-        Ensure there are exactly 4 options labeled a, b, c, d with no duplicates.
+        Ensure there are exactly 4 or 5 options.
         """
-        if len(v) != 4:
-            raise ValueError("Each question must contain exactly 4 options")
-        option_ids = [opt.id for opt in v]
-        if set(option_ids) != {"a", "b", "c", "d"}:
-            raise ValueError("Options must be labeled exactly a, b, c, d")
+        if len(v) < 4 or len(v) > 5:
+            raise ValueError("Each question must contain 4 or 5 options")
         return v
 
 
 class StudyMCQSchema(BaseModel):
     """
-    Representing the container for exactly 5 generated MCQ questions.
+    Representing the container for generated MCQ questions.
     """
-    questions: List[MCQQuestion] = Field(..., description="A list of exactly 5 generated questions")
+    questions: List[MCQQuestion] = Field(..., description="A list of generated questions")
 
-    @field_validator("questions")
-    @classmethod
-    def validate_questions_list(cls, v: List[MCQQuestion]) -> List[MCQQuestion]:
-        """
-        Ensure there are exactly 5 questions representing the 5 mandatory dimensions in order.
-        """
-        if len(v) != 5:
-            raise ValueError("The form must contain exactly 5 clarifying questions")
-            
-        expected_dimensions = [
-            "pricing_tolerance",
-            "problem_urgency",
-            "current_behaviour",
-            "purchase_trigger",
-            "biggest_hesitation"
-        ]
-        
-        for idx, dim in enumerate(expected_dimensions):
-            if idx >= len(v):
-                raise ValueError(f"Missing question for dimension '{dim}'")
-            if v[idx].dimension != dim:
-                raise ValueError(f"Question {idx + 1} must cover dimension '{dim}' in exact order. Received '{v[idx].dimension}'")
-                
-        return v
 
 
 class StudyInitializeResponse(BaseModel):
@@ -165,3 +154,228 @@ class StudyInitializeResponse(BaseModel):
     model_config = ConfigDict(
         populate_by_name=True
     )
+
+
+class StudyCohortGenerateRequest(BaseModel):
+    """
+    Schema representing the cohort generation request, taking the initial configuration,
+    the generated MCQ form, and the researcher's chosen answers.
+    """
+    study_id: str = Field(None, alias="studyId")
+    project_name: str = Field(..., alias="projectName")
+    product_idea: str = Field(..., alias="productIdea")
+    target_audience: str = Field(..., alias="targetAudience")
+    cohort_size: int = Field(..., alias="cohortSize", ge=5, le=200)
+    mcq_answers: Dict[str, str] = Field(..., alias="mcqAnswers")
+    mcq_form: StudyMCQSchema = Field(..., alias="mcqForm")
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class OceanProfileSchema(BaseModel):
+    openness: int = Field(..., ge=1, le=10)
+    conscientiousness: int = Field(..., ge=1, le=10)
+    extraversion: int = Field(..., ge=1, le=10)
+    agreeableness: int = Field(..., ge=1, le=10)
+    neuroticism: int = Field(..., ge=1, le=10)
+    profile_summary: str = Field(..., alias="profileSummary")
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class PersonaSchema(BaseModel):
+    id: str
+    name: str
+    age: int
+    occupation: str
+    location: str
+    income_bracket: str = Field(..., alias="incomeBracket")
+    tech_savviness: int = Field(..., alias="techSavviness", ge=1, le=5)
+    communication_style: str = Field(..., alias="communicationStyle")
+    current_solution: str = Field(..., alias="currentSolution")
+    relationship_with_money: str = Field(..., alias="relationshipWithMoney")
+    biggest_professional_frustration: str = Field(..., alias="biggestProfessionalFrustration")
+    awareness_of_problem: str = Field(..., alias="awarenessOfProblem")
+    trust_style: str = Field(..., alias="trustStyle")
+    dealbreaker: str
+    ocean_profile: OceanProfileSchema = Field(..., alias="oceanProfile")
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class ObjectionSchema(BaseModel):
+    objection: str
+    severity: str
+    would_overcome_if: str = Field(..., alias="wouldOvercomeIf")
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class MCQTranscriptItem(BaseModel):
+    question: str
+    options: List[str]
+    selected_option: str = Field(..., alias="selectedOption")
+    persona_response: str = Field(..., alias="personaResponse")
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class PersonaFeedbackSchema(BaseModel):
+    persona_id: str = Field(..., alias="personaId")
+    likelihood_to_buy: int = Field(..., alias="likelihoodToBuy", ge=1, le=5)
+    price_reaction: str = Field(..., alias="priceReaction")
+    would_try_free_trial: bool = Field(..., alias="wouldTryFreeTrial")
+    overall_statement: str = Field(..., alias="overallStatement")
+    mcq_transcript: List[MCQTranscriptItem] = Field(default_factory=list, alias="mcqTranscript")
+    features_should_have: List[str] = Field(..., alias="featuresShouldHave")
+    features_should_not_have: List[str] = Field(..., alias="featuresShouldNotHave")
+    top_objections: List[ObjectionSchema] = Field(..., alias="topObjections")
+    awareness_shift: str = Field(..., alias="awarenessShift")
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class ObjectionClusterSchema(BaseModel):
+    theme: str
+    frequency: int
+    persona_ids: List[str] = Field(..., alias="personaIds")
+    summary: str
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class PositiveSignalSchema(BaseModel):
+    signal: str
+    persona_ids: List[str] = Field(..., alias="personaIds")
+    evidence: str
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class SurprisingOutlierSchema(BaseModel):
+    persona_id: str = Field(..., alias="personaId")
+    expected_behaviour: str = Field(..., alias="expectedBehaviour")
+    actual_behaviour: str = Field(..., alias="actualBehaviour")
+    implication: str
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class FidelityDimensionSchema(BaseModel):
+    score: int = Field(..., ge=0, le=100)
+    evidence: str
+    model_config = ConfigDict(extra="allow")
+
+class FidelityAssessmentDimensionsSchema(BaseModel):
+    score_variance: FidelityDimensionSchema = Field(..., alias="scoreVariance")
+    profile_coherence: FidelityDimensionSchema = Field(..., alias="profileCoherence")
+    objection_diversity: FidelityDimensionSchema = Field(..., alias="objectionDiversity")
+    ocean_alignment: FidelityDimensionSchema = Field(..., alias="oceanAlignment")
+    persona_distinctiveness: FidelityDimensionSchema = Field(..., alias="personaDistinctiveness")
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+class FidelityAssessmentSchema(BaseModel):
+    dimensions: FidelityAssessmentDimensionsSchema
+    final_score: int = Field(..., alias="finalScore", ge=0, le=100)
+    label: str
+    primary_weakness: str = Field(..., alias="primaryWeakness")
+    improvement_note: str = Field(..., alias="improvementNote")
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+
+class SynthesisSchema(BaseModel):
+    objection_clusters: List[ObjectionClusterSchema] = Field(..., alias="objectionClusters")
+    positive_signals: List[PositiveSignalSchema] = Field(..., alias="positiveSignals")
+    surprising_outliers: List[SurprisingOutlierSchema] = Field(..., alias="surprisingOutliers")
+    critical_risk: str = Field(..., alias="criticalRisk")
+    executive_summary: str = Field(..., alias="executiveSummary")
+    fidelity: FidelityAssessmentSchema = Field(None, description="Fidelity assessment results")
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class StudyCohortGenerateResponse(BaseModel):
+    status: str
+    study_id: str = Field(..., alias="studyId")
+    personas: List[PersonaSchema]
+    feedback: List[PersonaFeedbackSchema]
+    synthesis: SynthesisSchema
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class StudyPersonasGenerateResponse(BaseModel):
+    status: str
+    study_id: str = Field(..., alias="studyId")
+    personas: List[PersonaSchema]
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class StudyFeedbackGenerateRequest(BaseModel):
+    study_id: str = Field(None, alias="studyId")
+    project_name: str = Field(..., alias="projectName")
+    product_idea: str = Field(..., alias="productIdea")
+    target_audience: str = Field(..., alias="targetAudience")
+    mcq_answers: Dict[str, str] = Field(..., alias="mcqAnswers")
+    mcq_form: StudyMCQSchema = Field(..., alias="mcqForm")
+    personas: List[PersonaSchema]
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class StudyFeedbackGenerateResponse(BaseModel):
+    status: str
+    feedback: List[PersonaFeedbackSchema]
+    synthesis: SynthesisSchema
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class TargetAudienceGenerateRequest(BaseModel):
+    project_name: str = Field(..., alias="projectName")
+    product_idea: str = Field(..., alias="productIdea")
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+
+class TargetAudienceGenerateResponse(BaseModel):
+    status: str
+    target_audience: str = Field(..., alias="targetAudience")
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
